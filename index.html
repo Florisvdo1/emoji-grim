@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Planner</title>
+    <style>
+        /* Base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: #fff;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        header button {
+            background-color: #ffca28;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        header button:hover {
+            background-color: #f5b301;
+        }
+
+        /* 3D Carousel */
+        .carousel-container {
+            width: 80%;
+            perspective: 800px;
+            height: 200px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .carousel {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transform-style: preserve-3d;
+            transform: rotateY(0deg);
+            transition: transform 0.8s ease-in-out;
+        }
+
+        .placeholder {
+            flex: 1;
+            background: #ddd;
+            border: 2px dashed #aaa;
+            text-align: center;
+            line-height: 200px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+            transform-origin: center center;
+            position: absolute;
+        }
+
+        .placeholder.morning {
+            transform: rotateY(0deg) translateZ(300px);
+        }
+
+        .placeholder.midday {
+            transform: rotateY(120deg) translateZ(300px);
+        }
+
+        .placeholder.evening {
+            transform: rotateY(240deg) translateZ(300px);
+        }
+
+        /* Emoji Deck */
+        .emoji-deck {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            width: 100%;
+            max-height: 150px;
+            background-color: #fff;
+            box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .emoji-item {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: grab;
+            user-select: none;
+            background-color: #fff;
+        }
+
+        .emoji-item:active {
+            cursor: grabbing;
+        }
+
+        /* Confetti */
+        .confetti-piece {
+            position: fixed;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fall 2s linear forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px);
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <button id="resetBtn">Reset</button>
+        <button id="homeworkBtn">Homework</button>
+        <button id="saveBtn">Save</button>
+    </header>
+
+    <!-- 3D Carousel -->
+    <div class="carousel-container">
+        <div class="carousel" id="carousel">
+            <div class="placeholder morning" data-placeholder="morning">Morning</div>
+            <div class="placeholder midday" data-placeholder="midday">Midday</div>
+            <div class="placeholder evening" data-placeholder="evening">Evening</div>
+        </div>
+    </div>
+
+    <!-- Emoji Deck -->
+    <div class="emoji-deck" id="emojiDeck">
+        <div class="emoji-item" draggable="true">🌞</div>
+        <div class="emoji-item" draggable="true">🍎</div>
+        <div class="emoji-item" draggable="true">📚</div>
+        <div class="emoji-item" draggable="true">☕</div>
+        <div class="emoji-item" draggable="true">🏃</div>
+        <div class="emoji-item" draggable="true">🎨</div>
+        <div class="emoji-item" draggable="true">🍔</div>
+        <div class="emoji-item" draggable="true">💻</div>
+        <div class="emoji-item" draggable="true">🎵</div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const carousel = document.getElementById('carousel');
+        const placeholders = document.querySelectorAll('.placeholder');
+        const emojiDeck = document.getElementById('emojiDeck');
+        const resetBtn = document.getElementById('resetBtn');
+        const homeworkBtn = document.getElementById('homeworkBtn');
+        const saveBtn = document.getElementById('saveBtn');
+
+        let isDragging = false;
+        let draggedItem = null;
+
+        // Drag-and-drop functionality
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('emoji-item')) {
+                isDragging = true;
+                draggedItem = e.target;
+                setTimeout(() => e.target.classList.add('hidden'), 0);
+            }
+        });
+
+        document.addEventListener('dragend', (e) => {
+            if (draggedItem) {
+                draggedItem.classList.remove('hidden');
+                draggedItem = null;
+                isDragging = false;
+            }
+        });
+
+        placeholders.forEach(placeholder => {
+            placeholder.addEventListener('dragover', (e) => e.preventDefault());
+            placeholder.addEventListener('drop', (e) => {
+                if (draggedItem) {
+                    placeholder.appendChild(draggedItem);
+                }
+            });
+        });
+
+        // Reset button functionality
+        resetBtn.addEventListener('click', () => {
+            placeholders.forEach(placeholder => {
+                while (placeholder.firstChild) {
+                    emojiDeck.appendChild(placeholder.firstChild);
+                }
+            });
+            carousel.style.transform = 'rotateY(0deg)';
+        });
+
+        // Homework button (confetti)
+        homeworkBtn.addEventListener('click', () => {
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                document.body.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 2000);
+            }
+        });
+
+        // Save button functionality (rotate carousel)
+        saveBtn.addEventListener('click', () => {
+            carousel.style.transform = 'rotateY(120deg)';
+        });
+    </script>
+</body>
+</html>
